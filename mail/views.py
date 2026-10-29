@@ -37,6 +37,7 @@ def compose(request):
             "error": "At least one recipient required."
         }, status=400)
 
+    
     # Convert email addresses to users
     recipients = []
     for email in emails:
@@ -47,7 +48,17 @@ def compose(request):
             return JsonResponse({
                 "error": f"User with email {email} does not exist."
             }, status=400)
-
+    
+    for recipient in recipients :
+         if recipient.email.lower() ==  request.user.email.lower():
+             
+             return JsonResponse(
+                 {
+                     'error':f"You cannot send mail to yourself"
+                 }
+             ,status=400)
+     
+    
     # Get contents of email
     subject = data.get("subject", "")
     body = data.get("body", "")

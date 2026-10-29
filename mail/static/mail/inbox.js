@@ -8,9 +8,7 @@ function initialize(){
 
     form.addEventListener('submit', function(event) {
         
-        event.preventDefault();
-        console.log('Form submited!')
-        send_mail()
+        initialize_composing(event)
     });
 
 
@@ -31,9 +29,44 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
-  
+  document.querySelector('#compose-recipients').required = true;
+  document.querySelector('#compose-subject').required = true;
+  document.querySelector('#compose-body').required = true;
   clear()
 }
+
+async function initialize_composing(Event){
+  const recipients = document.querySelector('#compose-recipients');
+  const subject = document.querySelector('#compose-subject');  
+  const body = document.querySelector('#compose-body');
+  const currentuseremail = document.querySelector('#user-data').dataset.email;
+
+        
+        console.log(recipients.value);
+        console.log(subject.value);
+        console.log(body.value);
+        
+        Event.preventDefault();
+        if (recipients.value.trim() === '' || subject.value.trim() == '' || 
+            body.value.trim() === ''){
+              alert("plz fill out all the field's");
+        }else {
+        
+              console.log('Form submitted!')
+              const response = await Send_mail(recipients.value, subject.value, body.value);
+              if (response.status === 400 ){
+                recipients.value = '';
+                alert(response.result);
+              }else{
+                console.log('#success');
+                clear();
+                load_mailbox('sent')
+              }
+        };
+}
+
+
+
   // Clear out composition fields
 function clear(){
   document.querySelector('#compose-recipients').value = '';
@@ -42,20 +75,13 @@ function clear(){
   
 }
 
-  
 
 
 
-function send_mail(){
-    const recipients = document.querySelector('#compose-recipients').value;
-    const subject = document.querySelector('#compose-subject').value;
-    const body = document.querySelector('#compose-body').value;
+async function Send_mail(recipients,subject,body){
+    
 
-    console.log(recipients);
-    console.log(subject);
-    console.log(body);
-    clear()
-     fetch('/emails',{
+    const result =   await fetch('/emails',{
       method:'POST',
       body : JSON.stringify({
         recipients:recipients,
@@ -63,13 +89,26 @@ function send_mail(){
         body:body,
       })
      })
-
-     .then(response => response.json())
-     .then(result => {
-         console.log(result);
-     });
-
-    console.log("success ")
+    const status = result.status;
+    const result_1 = await result.json();
+    console.log(status,result_1)
+    return ({
+         status: status,
+         result: result_1.error
+       });
+    // .then (response => {
+    //   const status = response.status;
+    //   const result_1 = response.json();
+    //   console.log(status,result_1)
+    //    return ({
+    //      status: status,
+    //      result: result_1
+    //    });
+    //  .then(async response => {
+    //     const status = response.status;
+    //     const result_1 = await response.json();
+    //   
+      // });
 
 }
 
