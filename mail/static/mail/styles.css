@@ -2,7 +2,7 @@ textarea {
     min-height: 400px;
 }
 
-#Mail-element {
+.Mail-element {
     border: 2px solid black;
    background-color: rgba(202, 198, 198, 0.826);
    margin: 10px;

@@ -10,6 +10,8 @@ function initialize(){
         
         initialize_composing(event)
     });
+    
+    
 
 
 
@@ -126,35 +128,56 @@ function load_mailbox(mailbox) {
     console.log(emails);
     App(emails)
     
-    function Mail(props){
+    function Mail({mail}){
+      function handle_click(){
+        open_mail(mail.id)
+      }
+      
       return (
-        <div id='Mail-element'>
-          <b>{props.sender_name}</b> {props.subject}
-             <t id='time'>{props.time}</t>
-          
-        </div>
         
-         
+        <div onClick={handle_click}className="Mail-element">
+            <b>{mail.sender_name}</b> {mail.subject}
+
+            <t id="time">{mail.timestamp}</t>
+        </div>
       );
     }
 
 
-    function App () {
-    
-      return(
+    function App() {
+       
+      if (emails.length === 0 ){
+        return (
+          <div>
+           <h1>{mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h1>
+           <div id='Empty-text'>
+               <h3>No emails</h3>
+           </div>
+        </div>
+        );
+      };
+      
+      // useEffect(()=>{
+      //      emails.forEach(element => {
+      //   document.querySelector(`Mail-${element.id}`).addEventListener('click' ,()=> {
+      //       show_mail(element.id)
+      //        });
+      //     });
+      // },[emails]);
+         
+       return(
         
           <div>
-            
-            
             <h1>{mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h1>
             
-             <div id="emails-all">
+            
+               <div id="email">
               
                   {emails.map(element => (
-                      <Mail sender_name={element.sender_name} subject={element.subject} 
-                      time={element.timestamp} 
+                      <Mail mail={element} 
                       />
                   ))}
+                  
             </div>
           </div>
         
@@ -162,12 +185,19 @@ function load_mailbox(mailbox) {
        
       
     }
-   
-    ReactDOM.render(<App />,document.querySelector('#emails-view'))
-
+    
+    ReactDOM.render(<App />,document.querySelector('#emails-view'));
+    
+    
   })
+
+function open_mail(email_id){
+ console.log(email_id);
+}
  
 }
+
+
  
 if (document.readyState == 'loading') {
   document.addEventListener('DOMContentLoaded',initialize);
