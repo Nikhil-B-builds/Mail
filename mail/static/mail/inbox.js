@@ -31,6 +31,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector("#email-view").style.display='none';
   document.querySelector('#compose-recipients').required = true;
   document.querySelector('#compose-subject').required = true;
   document.querySelector('#compose-body').required = true;
@@ -98,19 +99,7 @@ async function Send_mail(recipients,subject,body){
          status: status,
          result: result_1.error
        });
-    // .then (response => {
-    //   const status = response.status;
-    //   const result_1 = response.json();
-    //   console.log(status,result_1)
-    //    return ({
-    //      status: status,
-    //      result: result_1
-    //    });
-    //  .then(async response => {
-    //     const status = response.status;
-    //     const result_1 = await response.json();
-    //   
-      // });
+    
 
 }
 
@@ -120,24 +109,30 @@ function load_mailbox(mailbox) {
   // Show the mailbox and hide other views
   document.querySelector('#emails-view').style.display = 'block';
   document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector("#email-view").style.display='none';
 
   
   fetch(`/emails/${mailbox}`)
   .then(response =>  response.json())
   .then(emails => {
     console.log(emails);
-    App(emails)
+    
     
     function Mail({mail}){
       function handle_click(){
         open_mail(mail.id)
+        fetch(`/emails/${mail.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              read: true
+          })
+        
+        });
       }
       
       return (
-        
-        <div onClick={handle_click}className="Mail-element">
+        <div onClick={handle_click}className={`Mail-element ${mail.read ? 'Mail-element-read':""}`}>
             <b>{mail.sender_name}</b> {mail.subject}
-
             <t id="time">{mail.timestamp}</t>
         </div>
       );
@@ -157,13 +152,7 @@ function load_mailbox(mailbox) {
         );
       };
       
-      // useEffect(()=>{
-      //      emails.forEach(element => {
-      //   document.querySelector(`Mail-${element.id}`).addEventListener('click' ,()=> {
-      //       show_mail(element.id)
-      //        });
-      //     });
-      // },[emails]);
+     
          
        return(
         
@@ -192,7 +181,38 @@ function load_mailbox(mailbox) {
   })
 
 function open_mail(email_id){
- console.log(email_id);
+  console.log(email_id);
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  document.querySelector("#email-view").style.display='block';
+  
+
+  fetch(`/emails/${email_id}`)
+  .then(response=> response.json())
+  .then(email => {
+    console.log(email);
+    
+
+
+
+    function App(){
+      
+        return (
+          
+          <div id='Mail-body'>
+            <b>From : </b> {email.sender}<br />
+           <b>Subject : </b> {email.subject} <br />
+           <b>Timestamp : </b> {email.timestamp}<br />
+           <button class='btn btn-sm btn-outline-primary'>Reply</button>
+           <hr />
+           {email.body}
+
+          </div>
+        )
+    }
+
+    ReactDOM.render(<App />,document.querySelector('#email-view'));
+  });
 }
  
 }

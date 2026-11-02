@@ -4,7 +4,7 @@ from .models import Email
 
 
 class EmailAdmin(admin.ModelAdmin):
-    list_display = ['user','sender',"display_recipients",'body','read',
+    list_display = ['id','user','sender',"display_recipients",'body','read',
                     'archived']
     
     @admin.display(description="Recipients")
