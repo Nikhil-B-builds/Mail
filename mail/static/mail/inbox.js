@@ -121,20 +121,40 @@ function load_mailbox(mailbox) {
     function Mail({mail}){
       function handle_click(){
         open_mail(mail.id)
-        fetch(`/emails/${mail.id}`, {
-          method: 'PUT',
-          body: JSON.stringify({
-              read: true
-          })
-        
-        });
+        Read_archive(mail.id,'Read')
+      }
+      function Archive(arch){
+       
+        Read_archive(mail.id,arch)
       }
       
       return (
-        <div onClick={handle_click}className={`Mail-element ${mail.read ? 'Mail-element-read':""}`}>
-            <b>{mail.sender_name}</b> {mail.subject}
+
+
+
+      <div onClick={handle_click} className={`Mail-element ${mail.read ? 'Mail-element-read':""}`}>
+            <b id='sender'>{mail.sender_name}</b> <t id='subject'>{mail.subject}</t>
             <t id="time">{mail.timestamp}</t>
-        </div>
+           
+               <button onClick={
+                (event)=>{
+                  event.stopPropagation();
+                  Archive(mail.archived ? 'unarchive' : 'archive');
+                   }} className="btn btn-sm btn-outline-primary" 
+               >
+                 { mail.archived ? 'unarchive' : 'archive'}
+               </button>
+            
+           
+
+              <button onClick={(event) => {
+              event.stopPropagation();
+              handle_click();
+              }} className="btn btn-sm btn-outline-primary" >Open</button>
+      
+      </div>
+     
+      
       );
     }
 
@@ -163,8 +183,10 @@ function load_mailbox(mailbox) {
                <div id="email">
               
                   {emails.map(element => (
+
                       <Mail mail={element} 
                       />
+                      
                   ))}
                   
             </div>
@@ -196,11 +218,25 @@ function open_mail(email_id){
 
 
     function App(){
+
+       function Archive(arch){
+        console.log('Got Archive req')
+        Read_archive(email.id,arch)
+       }
       
         return (
           
           <div id='Mail-body'>
-            <b>From : </b> {email.sender}<br />
+            <b>From : </b> {email.sender} 
+            <button onClick={
+                (event)=>{
+                  event.stopPropagation();
+                  Archive(email.archived ? 'unarchive' : 'archive');
+                   }} className="btn btn-sm btn-outline-primary" 
+               >
+                 {email.archived ? 'Unarchive' : 'Archive'}
+            </button>
+            <br />
            <b>Subject : </b> {email.subject} <br />
            <b>Timestamp : </b> {email.timestamp}<br />
            <button class='btn btn-sm btn-outline-primary'>Reply</button>
@@ -215,6 +251,33 @@ function open_mail(email_id){
   });
 }
  
+}
+
+function Read_archive(email_id,req){
+  
+  console.log(email_id)
+  if (req==='archive' || req === 'unarchive'){
+     fetch(`/emails/${email_id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              archived: req === 'archive'
+          })
+        });
+        location.reload()
+  }else if(req === 'Read'){
+    fetch(`/emails/${email_id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+              read: true
+          })
+        
+        });
+  }
+  
+    else {
+    console.log('Invalid request')
+  }
+  
 }
 
 
