@@ -1,6 +1,7 @@
-
+const { useState, useEffect } = React;
 function initialize(){
   
+
 
 
     const form = document.querySelector('#compose-form');
@@ -32,9 +33,22 @@ function compose_email() {
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
   document.querySelector("#email-view").style.display='none';
-  document.querySelector('#compose-recipients').required = true;
-  document.querySelector('#compose-subject').required = true;
-  document.querySelector('#compose-body').required = true;
+ 
+  const recipients = document.querySelector('#compose-recipients')
+  const subject = document.querySelector('#compose-subject')
+  const body = document.querySelector('#compose-body')
+   
+
+
+
+  recipients.required = true;
+  subject.required = true;
+  body.required = true;
+  recipients.disabled = false;
+  subject.disabled = false;
+  body.disabled = false;
+
+  document.querySelector('#reply').style.display = 'none';
   clear()
 }
 
@@ -134,8 +148,9 @@ function load_mailbox(mailbox) {
 
       <div onClick={handle_click} className={`Mail-element ${mail.read ? 'Mail-element-read':""}`}>
             <b id='sender'>{mail.sender_name}</b> <t id='subject'>{mail.subject}</t>
-            <t id="time">{mail.timestamp}</t>
-           
+            <t id="time">{mail.timestamp }</t>
+            
+              { mailbox === 'sent'?'':
                <button onClick={
                 (event)=>{
                   event.stopPropagation();
@@ -144,7 +159,7 @@ function load_mailbox(mailbox) {
                >
                  { mail.archived ? 'unarchive' : 'archive'}
                </button>
-            
+            }
            
 
               <button onClick={(event) => {
@@ -160,7 +175,7 @@ function load_mailbox(mailbox) {
 
 
     function App() {
-       
+     
       if (emails.length === 0 ){
         return (
           <div>
@@ -219,6 +234,18 @@ function open_mail(email_id){
 
     function App(){
 
+      const [currentuser,setcurrentuser]=useState(null)
+
+      useEffect(()=>{
+        fetch("/user")
+         .then(response => response.json())
+         .then(data => {
+          console.log(data.email)
+          setcurrentuser(data.email);
+        })
+      },[]);
+      
+
        function Archive(arch){
         console.log('Got Archive req')
         Read_archive(email.id,arch)
@@ -228,6 +255,7 @@ function open_mail(email_id){
           
           <div id='Mail-body'>
             <b>From : </b> {email.sender} 
+            {email.sender === currentuser?'':
             <button onClick={
                 (event)=>{
                   event.stopPropagation();
@@ -235,11 +263,18 @@ function open_mail(email_id){
                    }} className="btn btn-sm btn-outline-primary" 
                >
                  {email.archived ? 'Unarchive' : 'Archive'}
-            </button>
+            </button>}
+
+
             <br />
+            <b>To : </b> {currentuser} <br />
            <b>Subject : </b> {email.subject} <br />
            <b>Timestamp : </b> {email.timestamp}<br />
-           <button class='btn btn-sm btn-outline-primary'>Reply</button>
+
+           {email.sender === currentuser?'':
+           <button class='btn btn-sm btn-outline-primary' onClick={()=> {
+            reply(email.sender,email.subject,email.body,email.timestamp)
+            }}>Reply</button>}
            <hr />
            {email.body}
 
@@ -280,6 +315,31 @@ function Read_archive(email_id,req){
   
 }
 
+
+function reply(sender,resubject,pre_body,time){
+  console.log('reply request got ')
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'block';
+  document.querySelector("#email-view").style.display='none';
+
+
+  const recipients = document.querySelector('#compose-recipients')
+  const subject = document.querySelector('#compose-subject')
+  const body = document.querySelector('#compose-body')
+   
+ 
+  recipients.value = sender ;
+  recipients.disabled = true;
+  subject.value ='Re : ' + resubject ;
+  subject.disabled = true;
+  body.placeholder = 'type your reply...';
+  
+
+  const reply = document.querySelector('#compose-reply')
+  reply.style.display = 'block';
+  reply.value = `on ${time} ${sender} wrote : ` + pre_body +'\n'
+  reply.disabled = true;
+}
 
  
 if (document.readyState == 'loading') {

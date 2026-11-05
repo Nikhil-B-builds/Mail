@@ -188,3 +188,11 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "mail/register.html")
+
+
+
+@login_required
+def current_user(request):
+    return JsonResponse({
+        "email": request.user.email
+    })
